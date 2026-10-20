@@ -101,6 +101,26 @@ fun u64_max_is_split_without_abort() {
     assert_eq!(forward(3, value), vector[value / 3 * 3]);
 }
 
+/// A value equal to the track count pays each track 1 with no remainder.
+#[test]
+fun value_equal_to_track_count_pays_one_each() {
+    assert_eq!(forward(5, 5), vector[5]);
+}
+
+/// The 1,000-track cap splits `u64::MAX` in one event.
+#[test]
+fun max_tracks_split_u64_max() {
+    let n = release::max_tracks();
+    let value = u64::max_value!();
+    assert_eq!(forward(n, value), vector[value / n * n]);
+}
+
+/// At the 1,000-track cap, 999 base units forward nothing.
+#[test]
+fun max_tracks_below_one_unit_each_forwards_nothing() {
+    assert_eq!(forward(release::max_tracks(), 999), vector[]);
+}
+
 #[test]
 fun forward_reports_its_release() {
     let mut ts = begin();
@@ -203,5 +223,15 @@ fun a_foreign_cap_is_rejected_on_an_empty_snapshot() {
     ts.next_tx(ARTIST);
     let root = ts.take_shared<AccumulatorRoot>();
     release_revenue_forwarder::redeem_and_forward<USD>(&mut release, &other_cap, &root);
+    abort
+}
+
+#[test, expected_failure(abort_code = release::EUnauthorized)]
+fun a_foreign_cap_is_rejected_on_receive() {
+    let mut ts = begin();
+    let recording_ids = recordings(&mut ts, 1);
+    let (mut release, _cap) = new_release(&mut ts, recording_ids);
+    let (_other, other_cap) = new_release(&mut ts, recording_ids);
+    release_revenue_forwarder::receive_and_forward<USD>(&mut release, &other_cap, vector[]);
     abort
 }

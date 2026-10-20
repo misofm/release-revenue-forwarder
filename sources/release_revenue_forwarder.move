@@ -24,6 +24,8 @@ use royalty_pool::pool;
 
 // === Events ===
 
+/// Emitted once per forward that pays the tracks; `amount` is the total the
+/// tracks received.
 public struct ReleaseRevenueForwardedEvent<phantom Currency> has copy, drop {
     release_id: ID,
     amount: u64,
@@ -51,6 +53,8 @@ public fun forward<Currency>(release: &Release, mut revenue: Balance<Currency>) 
     if (revenue.value() == 0) revenue.destroy_zero()
     else revenue.send_funds(release_id.to_address())
 }
+
+// === Admin Functions ===
 
 /// Forwards all Release funds settled at the start of the current consensus
 /// commit. Redeeming a Release twice in one commit fails the transaction with
