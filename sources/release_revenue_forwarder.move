@@ -53,10 +53,8 @@ public fun forward<Currency>(release: &Release, mut revenue: Balance<Currency>) 
 }
 
 /// Forwards all Release funds settled at the start of the current consensus
-/// commit. There is no amount: a caller always sweeps everything. The snapshot
-/// is constant within a commit: redeeming the same Release twice in one commit
-/// fails the transaction with `InsufficientFundsForWithdraw`, so include each
-/// Release at most once per PTB.
+/// commit. Redeeming a Release twice in one commit fails the transaction with
+/// `InsufficientFundsForWithdraw`, so include each Release at most once per PTB.
 public fun redeem_and_forward<Currency>(
     release: &mut Release,
     admin_cap: &ReleaseAdminCap,

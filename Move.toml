@@ -7,5 +7,5 @@ authors = ["Miso Labs, Inc. (build@miso.fm)"]
 [dependencies]
 musicos = { git = "https://github.com/misofm/musicos.git", rev = "f68189873e712ee931460cc00404db4f01391a24" }
 hikida = { git = "https://github.com/unconfirmedlabs/hikida.git", rev = "c91d6a0f536a5f1457b342a8838fc1d7ba09212e" }
-royalty_pool = { git = "https://github.com/misofm/royalty-pool.git", rev = "11a2c4f51e1ee07861eaa2d6800f43f4ae282a21" }
+royalty_pool = { git = "https://github.com/misofm/royalty-pool.git", rev = "bc56825275e11ba9b27b3a189a395574be1077a2" }
 vault = { git = "https://github.com/misofm/vault.git", rev = "b39cbba9688d19aa651032f25ca27951746d13f6", modes = ["test"] }

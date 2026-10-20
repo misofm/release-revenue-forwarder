@@ -14,7 +14,7 @@ receive_and_forward<USD>(release, cap, coins)  // coins sent to the Release
 
 `redeem_and_forward` and `receive_and_forward` check the `ReleaseAdminCap`, including when there is nothing to redeem. Callers can't choose amounts or recipients.
 
-Each forward that pays the tracks emits one `ReleaseRevenueForwardedEvent { release_id, amount }`, where `amount` is what the tracks receive. Nothing is emitted when no track receives anything. Forwarding uses `send_funds` and writes no shared object, so concurrent sales of one Release don't contend. At the 1,000-track cap a forward makes 1,000 `send_funds` calls and emits one event.
+Each forward that pays the tracks emits one `ReleaseRevenueForwardedEvent { release_id, amount }`, where `amount` is what the tracks receive. Nothing is emitted when no track receives anything. Forwarding uses `send_funds` and writes no shared object, so concurrent sales of one Release don't contend. A forward fits Sui's minimum charge of 1,000 computation units up to about 230–270 tracks. Above that, each track's three native calls (pool-address derivation, accumulator address, accumulator add) push the transaction past 700 native calls and instruction tiers apply: measured on localnet, about 8,000 units at 400 tracks, 20,000 at 500, 43,900 at 700 and 79,700 at the 1,000-track cap (about 0.008 SUI at a 100 MIST gas price).
 
 ## Accumulator redemption
 
