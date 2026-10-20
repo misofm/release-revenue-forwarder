@@ -5,7 +5,7 @@ license = "FSL-1.1-ALv2"
 authors = ["Miso Labs, Inc. (build@miso.fm)"]
 
 [dependencies]
-musicos = { git = "https://github.com/misofm/musicos.git", rev = "f68189873e712ee931460cc00404db4f01391a24" }
+musicos = { git = "https://github.com/misofm/musicos.git", rev = "327a917b534d6965b46acd0596d4bdf3be9ccda1" }
 hikida = { git = "https://github.com/unconfirmedlabs/hikida.git", rev = "c91d6a0f536a5f1457b342a8838fc1d7ba09212e" }
-royalty_pool = { git = "https://github.com/misofm/royalty-pool.git", rev = "bc56825275e11ba9b27b3a189a395574be1077a2" }
+royalty_pool = { git = "https://github.com/misofm/royalty-pool.git", rev = "8be09a684c9bf3d81e5c936bb10cd11186793da6" }
 vault = { git = "https://github.com/misofm/vault.git", rev = "b39cbba9688d19aa651032f25ca27951746d13f6", modes = ["test"] }
