@@ -1,6 +1,6 @@
 # release_revenue_forwarder
 
-Forwards a musicos Release's revenue straight to each track's recording pool, split equally across `release.recording_ids()`.
+Forwards a `miso_music` Release's revenue straight to each track's recording pool, split equally across `release.recording_ids()`.
 
 ```
 forward<USD>(release, payment)                 // a sale: no crank

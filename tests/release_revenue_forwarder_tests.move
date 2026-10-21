@@ -15,7 +15,7 @@ use sui::balance;
 use sui::coin::{Self, Coin};
 use sui::event::{Self, events_by_type};
 use sui::test_scenario::{Self, Scenario};
-use musicos::release::{Self, Release, ReleaseAdminCap};
+use miso_music::release::{Self, Release, ReleaseAdminCap};
 use vault::vault;
 use release_revenue_forwarder::release_revenue_forwarder::{
     Self,

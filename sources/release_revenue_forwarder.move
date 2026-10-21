@@ -19,7 +19,7 @@ use sui::coin::Coin;
 use sui::event::emit;
 use sui::transfer::Receiving;
 use hikida::hikida;
-use musicos::release::{Release, ReleaseAdminCap};
+use miso_music::release::{Release, ReleaseAdminCap};
 use royalty_pool::pool;
 
 // === Events ===
