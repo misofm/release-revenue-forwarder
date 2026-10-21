@@ -55,7 +55,6 @@ fun forwarded(track_count: u64): vector<u64> {
     })
 }
 
-/// Forwards `value` across `n` tracks and returns the reported amounts.
 fun forward(n: u64, value: u64): vector<u64> {
     let mut ts = begin();
     let recording_ids = recordings(&mut ts, n);
@@ -101,13 +100,11 @@ fun u64_max_is_split_without_abort() {
     assert_eq!(forward(3, value), vector[value / 3 * 3]);
 }
 
-/// A value equal to the track count pays each track 1 with no remainder.
 #[test]
 fun value_equal_to_track_count_pays_one_each() {
     assert_eq!(forward(5, 5), vector[5]);
 }
 
-/// The 1,000-track cap splits `u64::MAX` in one event.
 #[test]
 fun max_tracks_split_u64_max() {
     let n = release::max_tracks();
@@ -115,13 +112,11 @@ fun max_tracks_split_u64_max() {
     assert_eq!(forward(n, value), vector[value / n * n]);
 }
 
-/// At the 1,000-track cap, 999 base units forward nothing.
 #[test]
 fun max_tracks_below_one_unit_each_forwards_nothing() {
     assert_eq!(forward(release::max_tracks(), 999), vector[]);
 }
 
-/// The event carries the Release, the split and the remainder.
 #[test]
 fun forward_reports_its_release_and_split() {
     let mut ts = begin();

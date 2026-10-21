@@ -71,7 +71,6 @@ public fun redeem_and_forward<Currency>(
     forward(release, revenue)
 }
 
-/// Forwards coins sent to the Release.
 public fun receive_and_forward<Currency>(
     release: &mut Release,
     admin_cap: &ReleaseAdminCap,
