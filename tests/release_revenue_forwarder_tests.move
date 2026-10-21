@@ -1,10 +1,6 @@
 // Copyright (c) Miso Labs, Inc.
 // SPDX-License-Identifier: FSL-1.1-ALv2
 
-/// The unit-test VM does not settle accumulators, so these tests check the
-/// reported amounts; funds arriving at pool addresses, and a funded
-/// `redeem_and_forward`, need a network test. `royalty_pool` tests that its
-/// derived addresses are the pools'.
 #[test_only]
 module release_revenue_forwarder::release_revenue_forwarder_tests;
 
@@ -36,7 +32,6 @@ fun begin(): Scenario {
     ts
 }
 
-/// Recording IDs whose pools do not exist yet.
 fun recordings(ts: &mut Scenario, n: u64): vector<ID> {
     vector::tabulate!(n, |_| id_of(ts.ctx().fresh_object_address()))
 }
@@ -47,7 +42,6 @@ fun new_release(ts: &mut Scenario, recording_ids: vector<ID>): (Release, Release
     release::new_for_testing(consents, ts.ctx())
 }
 
-/// The total each forward reported paying `track_count` tracks, in order.
 fun forwarded(track_count: u64): vector<u64> {
     events_by_type<ReleaseRevenueForwardedEvent<USD>>().map!(|event| {
         let (_, value_per_track, _) = release_revenue_forwarder::forwarded_event_fields(&event);

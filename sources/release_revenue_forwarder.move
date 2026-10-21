@@ -1,14 +1,6 @@
 // Copyright (c) Miso Labs, Inc.
 // SPDX-License-Identifier: FSL-1.1-ALv2
 
-/// Release revenue, forwarded straight to each track's recording pool.
-///
-/// `forward` splits revenue equally across the Release's tracks and sends each
-/// share to the recording's canonical pool address, where `pool::settle` folds
-/// it in. A sale can pass its payment to `forward`, so its revenue needs no
-/// crank. `redeem_and_forward` and `receive_and_forward` forward revenue paid
-/// to the Release itself. The rounding remainder goes to the Release, so no
-/// track is favored.
 module release_revenue_forwarder::release_revenue_forwarder;
 
 // === Imports ===
@@ -24,9 +16,6 @@ use royalty_pool::pool;
 
 // === Events ===
 
-/// Emitted once per forward that pays the tracks: each recording's pool got
-/// `value_per_track` and the Release got `remainder`. The recipients are the
-/// tracklist from `ReleasePublishedEvent`.
 public struct ReleaseRevenueForwardedEvent<phantom Currency> has copy, drop {
     release_id: ID,
     value_per_track: u64,
@@ -35,9 +24,6 @@ public struct ReleaseRevenueForwardedEvent<phantom Currency> has copy, drop {
 
 // === Public Functions ===
 
-/// Sends `total / n` to each track's recording pool address and the
-/// remainder to the Release. A recording's pool need not exist yet: funds wait
-/// at its address until it does. Permissionless.
 public fun forward<Currency>(release: &Release, mut revenue: Balance<Currency>) {
     let release_id = object::id(release);
     let recording_ids = release.recording_ids();
@@ -59,9 +45,6 @@ public fun forward<Currency>(release: &Release, mut revenue: Balance<Currency>) 
 
 // === Admin Functions ===
 
-/// Forwards all Release funds settled at the start of the current consensus
-/// commit. Redeeming a Release twice in one commit fails the transaction with
-/// `InsufficientFundsForWithdraw`, so include each Release at most once per PTB.
 public fun redeem_and_forward<Currency>(
     release: &mut Release,
     admin_cap: &ReleaseAdminCap,
