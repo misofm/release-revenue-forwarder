@@ -47,11 +47,12 @@ fun new_release(ts: &mut Scenario, recording_ids: vector<ID>): (Release, Release
     release::new_for_testing(consents, ts.ctx())
 }
 
-/// The amount each forward reported, in order.
+/// The total each forward reported paying the tracks, in order.
 fun forwarded(): vector<u64> {
     events_by_type<ReleaseRevenueForwardedEvent<USD>>().map!(|event| {
-        let (_, amount) = release_revenue_forwarder::forwarded_event_fields(&event);
-        amount
+        let (_, recording_ids, value_per_track, _) =
+            release_revenue_forwarder::forwarded_event_fields(&event);
+        value_per_track * recording_ids.length()
     })
 }
 
@@ -76,7 +77,7 @@ fun equal_split_is_exact() {
 }
 
 #[test]
-fun remainder_is_not_reported() {
+fun remainder_is_excluded_from_the_tracks_total() {
     assert_eq!(forward(3, 10), vector[9]);
 }
 
@@ -121,15 +122,21 @@ fun max_tracks_below_one_unit_each_forwards_nothing() {
     assert_eq!(forward(release::max_tracks(), 999), vector[]);
 }
 
+/// The event carries the Release, its tracks, the split and the remainder.
 #[test]
-fun forward_reports_its_release() {
+fun forward_reports_its_release_and_split() {
     let mut ts = begin();
-    let recording_ids = recordings(&mut ts, 2);
+    let recording_ids = recordings(&mut ts, 3);
     let (release, cap) = new_release(&mut ts, recording_ids);
-    release_revenue_forwarder::forward(&release, balance::create_for_testing<USD>(10));
+    release_revenue_forwarder::forward(&release, balance::create_for_testing<USD>(11));
     let events = events_by_type<ReleaseRevenueForwardedEvent<USD>>();
-    let (release_id, _) = release_revenue_forwarder::forwarded_event_fields(&events[0]);
+    assert_eq!(events.length(), 1);
+    let (release_id, event_recording_ids, value_per_track, remainder) =
+        release_revenue_forwarder::forwarded_event_fields(&events[0]);
     assert_eq!(release_id, object::id(&release));
+    assert_eq!(event_recording_ids, *release.recording_ids());
+    assert_eq!(value_per_track, 3);
+    assert_eq!(remainder, 2);
     destroy(release);
     destroy(cap);
     ts.end();

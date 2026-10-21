@@ -14,9 +14,9 @@ receive_and_forward<USD>(release, cap, coins)  // coins sent to the Release
 
 `redeem_and_forward` and `receive_and_forward` check the `ReleaseAdminCap`, including when there is nothing to redeem. Callers can't choose amounts or recipients.
 
-Each forward that pays the tracks emits one `ReleaseRevenueForwardedEvent { release_id, amount }`, where `amount` is what the tracks receive. Nothing is emitted when no track receives anything. Forwarding uses `send_funds` and only reads the Release (no write lock), so concurrent sales of one Release don't contend.
+Each forward that pays the tracks emits one `ReleaseRevenueForwardedEvent<Currency> { release_id, recording_ids, value_per_track, remainder }`: every recording in `recording_ids` received `value_per_track` at its pool address and the Release received `remainder`. The tracks' total is `value_per_track × recording_ids.length()`, computed from the event alone. Nothing is emitted when no track receives anything. The payload is `32 + 32·n + 16` BCS bytes plus a 1–2 byte length prefix for `n` tracks: about 32 KB at the 1,000-track cap, well under Sui's 250 KiB per-event limit. Forwarding uses `send_funds` and only reads the Release (no write lock), so concurrent sales of one Release don't contend.
 
-Gas, measured on localnet: a forward fits Sui's minimum charge of 1,000 computation units up to about 230–270 tracks. Above that, each track's three native calls (pool-address derivation, accumulator address, accumulator add) push the transaction past 700 native calls and instruction tiers apply: about 8,000 units at 400 tracks, 20,000 at 500, 43,900 at 700 and 79,700 at the 1,000-track cap (about 0.008 SUI at a 100 MIST gas price).
+Gas, measured on localnet without the event's `recording_ids`: a forward fits Sui's minimum charge of 1,000 computation units up to about 230–270 tracks. Above that, each track's three native calls (pool-address derivation, accumulator address, accumulator add) push the transaction past 700 native calls and instruction tiers apply: about 8,000 units at 400 tracks, 20,000 at 500, 43,900 at 700 and 79,700 at the 1,000-track cap (about 0.008 SUI at a 100 MIST gas price). Each recording ID in the event adds about 0.4 computation units (Sui charges 12 internal units per event byte, 1,000 per unit), about 385 units at the cap.
 
 ## Accumulator redemption
 

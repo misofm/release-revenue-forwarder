@@ -24,11 +24,13 @@ use royalty_pool::pool;
 
 // === Events ===
 
-/// Emitted once per forward that pays the tracks; `amount` is the total the
-/// tracks received.
+/// Emitted once per forward that pays the tracks: each recording's pool got
+/// `value_per_track` and the Release got `remainder`.
 public struct ReleaseRevenueForwardedEvent<phantom Currency> has copy, drop {
     release_id: ID,
-    amount: u64,
+    recording_ids: vector<ID>,
+    value_per_track: u64,
+    remainder: u64,
 }
 
 // === Public Functions ===
@@ -42,12 +44,14 @@ public fun forward<Currency>(release: &Release, mut revenue: Balance<Currency>) 
     let track_count = recording_ids.length();
     let value_per_track = revenue.value() / track_count;
     if (value_per_track > 0) {
-        emit(ReleaseRevenueForwardedEvent<Currency> {
-            release_id,
-            amount: value_per_track * track_count,
-        });
         recording_ids.do_ref!(|recording_id| {
             revenue.split(value_per_track).send_funds(pool::derive_address<Currency>(*recording_id))
+        });
+        emit(ReleaseRevenueForwardedEvent<Currency> {
+            release_id,
+            recording_ids: *recording_ids,
+            value_per_track,
+            remainder: revenue.value(),
         });
     };
     if (revenue.value() == 0) revenue.destroy_zero()
@@ -83,6 +87,6 @@ public fun receive_and_forward<Currency>(
 #[test_only]
 public fun forwarded_event_fields<Currency>(
     event: &ReleaseRevenueForwardedEvent<Currency>,
-): (ID, u64) {
-    (event.release_id, event.amount)
+): (ID, vector<ID>, u64, u64) {
+    (event.release_id, event.recording_ids, event.value_per_track, event.remainder)
 }
