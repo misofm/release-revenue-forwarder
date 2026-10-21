@@ -47,12 +47,11 @@ fun new_release(ts: &mut Scenario, recording_ids: vector<ID>): (Release, Release
     release::new_for_testing(consents, ts.ctx())
 }
 
-/// The total each forward reported paying the tracks, in order.
-fun forwarded(): vector<u64> {
+/// The total each forward reported paying `track_count` tracks, in order.
+fun forwarded(track_count: u64): vector<u64> {
     events_by_type<ReleaseRevenueForwardedEvent<USD>>().map!(|event| {
-        let (_, recording_ids, value_per_track, _) =
-            release_revenue_forwarder::forwarded_event_fields(&event);
-        value_per_track * recording_ids.length()
+        let (_, value_per_track, _) = release_revenue_forwarder::forwarded_event_fields(&event);
+        value_per_track * track_count
     })
 }
 
@@ -62,7 +61,7 @@ fun forward(n: u64, value: u64): vector<u64> {
     let recording_ids = recordings(&mut ts, n);
     let (release, cap) = new_release(&mut ts, recording_ids);
     release_revenue_forwarder::forward(&release, balance::create_for_testing<USD>(value));
-    let amounts = forwarded();
+    let amounts = forwarded(n);
     destroy(release);
     destroy(cap);
     ts.end();
@@ -122,7 +121,7 @@ fun max_tracks_below_one_unit_each_forwards_nothing() {
     assert_eq!(forward(release::max_tracks(), 999), vector[]);
 }
 
-/// The event carries the Release, its tracks, the split and the remainder.
+/// The event carries the Release, the split and the remainder.
 #[test]
 fun forward_reports_its_release_and_split() {
     let mut ts = begin();
@@ -131,10 +130,9 @@ fun forward_reports_its_release_and_split() {
     release_revenue_forwarder::forward(&release, balance::create_for_testing<USD>(11));
     let events = events_by_type<ReleaseRevenueForwardedEvent<USD>>();
     assert_eq!(events.length(), 1);
-    let (release_id, event_recording_ids, value_per_track, remainder) =
+    let (release_id, value_per_track, remainder) =
         release_revenue_forwarder::forwarded_event_fields(&events[0]);
     assert_eq!(release_id, object::id(&release));
-    assert_eq!(event_recording_ids, *release.recording_ids());
     assert_eq!(value_per_track, 3);
     assert_eq!(remainder, 2);
     destroy(release);
@@ -174,7 +172,7 @@ fun received_coins_are_combined_and_forwarded() {
     ts.next_tx(ARTIST);
     let coins = coin_ids.map!(|id| test_scenario::receiving_ticket_by_id<Coin<USD>>(id));
     release_revenue_forwarder::receive_and_forward(&mut release, &cap, coins);
-    assert_eq!(forwarded(), vector[10_000]);
+    assert_eq!(forwarded(2), vector[10_000]);
 
     destroy(release);
     destroy(cap);
@@ -210,7 +208,7 @@ fun a_vaulted_cap_receives() {
     let (borrowed_cap, receipt) = vault.borrow_as_admin(&vault_admin_cap);
     release_revenue_forwarder::receive_and_forward(&mut release, &borrowed_cap, coins);
     vault.put_back(borrowed_cap, receipt);
-    assert_eq!(forwarded(), vector[7]);
+    assert_eq!(forwarded(1), vector[7]);
 
     destroy(vault_admin_cap);
     destroy(vault);
